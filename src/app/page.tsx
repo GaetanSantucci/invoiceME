@@ -1,44 +1,52 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
-	const inputRef = useRef<HTMLInputElement>(null);
+	const [state, setState] = useState({
+		username: '',
+		password: '',
+	});
+	const [users, setUsers] = useState([]);
+	console.log('🚀  users:', users);
+	const [loading, setLoading] = useState(false);
 
-	// const formSubmit = (
-	// 	event: React.FormEvent<HTMLFormElement>
-	// ): void => {
-	// 	event.preventDefault();
-	// 	console.log('form submitted');
-	// 	if (inputRef.current) {
-	// 		console.log(inputRef.current.value);
-	// 	}
-	// };
+	const handleInputChange = (
+		event: React.FormEvent<HTMLInputElement>
+	) => {
+		const { value, name } = event.currentTarget;
+
+		setState({
+			...state,
+			[name]: value,
+		});
+	};
 
 	const handleSubmit = (
 		event: React.FormEvent<HTMLFormElement>
 	) => {
 		event.preventDefault();
-		if (inputRef.current) {
-			console.log(inputRef.current.value);
+		console.log(state);
+	};
+
+	const handleFetchUser = async () => {
+		try {
+			setLoading(true);
+			const response = await fetch('/api/user');
+			if (response.ok) {
+				const data = await response.json();
+				console.log(
+					'🚀 ~ file: page.tsx:38 ~ handleFetchUser ~ data:',
+					data
+				);
+				setUsers(data);
+			}
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setLoading(false);
 		}
 	};
-
-	const [inputValue, setInputValue] = useState<string>('');
-	console.log(inputValue);
-
-	const handleInput = (
-		event: React.ChangeEvent<HTMLInputElement>
-	): void => {
-		setInputValue(event.target.value);
-	};
-
-	// const formSubmit = (
-	// 	event: React.FormEvent<HTMLFormElement>
-	// ): void => {
-	// 	event.preventDefault();
-	// 	console.log('form submitted');
-	// };
 
 	return (
 		<main className='flex min-h-screen flex-col items-center justify-between p-24'>
@@ -60,9 +68,9 @@ export default function Home() {
 							className='bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500'
 							id='inline-full-name'
 							type='text'
-							// value={inputValue}
-							// onChange={handleInput}
-							ref={inputRef}
+							name='username'
+							value={state.username}
+							onChange={handleInputChange}
 						/>
 					</div>
 				</div>
@@ -81,9 +89,9 @@ export default function Home() {
 							id='inline-password'
 							type='password'
 							placeholder='******************'
-							// value={inputValue}
-							// onChange={handleInput}
-							ref={inputRef}
+							name='password'
+							value={state.password}
+							onChange={handleInputChange}
 						/>
 					</div>
 				</div>
@@ -92,13 +100,38 @@ export default function Home() {
 					<div className='md:w-2/3'>
 						<button
 							className='shadow bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded'
-							type='button'
+							type='submit'
 						>
 							Sign Up
 						</button>
 					</div>
+					<div className='md:w-2/3'>
+						<button
+							className='shadow bg-blue-500 hover:bg-blue-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded'
+							type='submit'
+							onClick={handleFetchUser}
+						>
+							Fecth Users
+						</button>
+					</div>
 				</div>
 			</form>
+			{loading && <div>Loading...</div>}
+			{users && (
+				<ul className='flex min-h-screen flex-col items-center justify-between p-4'>
+					{users.map(
+						(user: {
+							id: number;
+							username: string;
+							email: string;
+						}) => (
+							<li key={user.username}>
+								{user.username} - {user.email}
+							</li>
+						)
+					)}
+				</ul>
+			)}
 		</main>
 	);
 }
