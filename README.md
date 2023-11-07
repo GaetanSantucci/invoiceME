@@ -16,21 +16,45 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Prisma
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Step to install and initialize prisma
 
-## Learn More
+`npm i -D prisma`
+`npm i @c=prisma/client`
 
-To learn more about Next.js, take a look at the following resources:
+`npx prisma init`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In the .env file, set DATABASE_URL for db connection
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+`npx prisma db pull`
+`npx prisma generate`
 
-## Deploy on Vercel
+Create schema.prisma file to connect database and create schema for differents tables:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+model Customer {
+  id       Int    @id @default(autoincrement())
+  username String
+  email    String
+}
+```
+
+And in API routes:
+
+```
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+```
+
+After, we can seed and create migration plan using:
+
+`npx prisma migrate dev --name init` that will generate a prisma folder with schema.prisma file with all schema inside
+
+## Deploy on Docker
+
